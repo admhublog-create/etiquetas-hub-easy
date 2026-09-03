@@ -1,0 +1,27 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const supabase=createClient('https://c--102f54f5-5f8b-4f19-aa51-2244c18d2b83-prod.lovable.cloud','sb_publishable_nAJIGfPVHTtEejRo1-TL4g_9uKzid-V');
+const TYPES=['100x150','100x80','100x30'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const monthLabel=k=>{const [y,m]=String(k).split('-');return new Date(+y,+m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})};
+const parseMoney=s=>Number(String(s||'').replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,''))||0;
+async function load(){
+ const tabs=$('.tabs'); if(!tabs){setTimeout(load,250);return}
+ if($('#histTab'))return;
+ const b=document.createElement('button'); b.className='tab'; b.id='histTab'; b.textContent='Compras históricas'; b.dataset.tab='historico'; tabs.appendChild(b);
+ const shell=$('.admin-shell'); const sec=document.createElement('section'); sec.className='section'; sec.id='historico'; shell.appendChild(sec);
+ b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');sec.classList.add('active');render()};
+ await render();
+}
+async function render(){
+ const {data,error}=await supabase.from('compras_historicas').select('*').order('competencia',{ascending:false}).order('created_at',{ascending:false});
+ if(error){$('#historico').innerHTML='<div class="panel">Não foi possível carregar as compras históricas.</div>';return}
+ const rows=data||[], total=rows.reduce((s,x)=>s+Number(x.valor||0),0), rolos=rows.reduce((s,x)=>s+Number(x.rolos||0),0);
+ $('#historico').innerHTML=`<div class="two"><div class="panel"><h3>Registrar compra histórica</h3><p class="muted">Somente informativo. Este lançamento NÃO altera o estoque atual.</p><div class="form-grid"><div class="field"><label>Competência</label><input id="hMonth" type="month"></div><div class="field"><label>Tamanho</label><select id="hType">${TYPES.map(t=>`<option>${t}</option>`).join('')}</select></div><div class="field"><label>Unidade</label><select id="hUnit"><option value="boxes">Caixas</option><option value="rolls">Rolos</option></select></div><div class="field"><label>Quantidade</label><input id="hQty" type="number" min="1" value="1"></div><div class="field"><label>Valor total</label><input id="hValue" inputmode="decimal" placeholder="Ex.: 850,00"></div><div class="field"><label>Fornecedor</label><input id="hSupplier" placeholder="Opcional"></div><div class="field"><label>Observação</label><textarea id="hObs" placeholder="Opcional"></textarea></div><div class="alert" style="margin:0"><strong>Compra histórica</strong><div class="muted">Não será somada ao saldo de estoque.</div></div><button class="btn" id="hSave">Salvar compra histórica</button></div></div><div class="panel"><h3>Resumo histórico</h3><div class="metrics"><div class="metric"><div class="label">Total informado</div><div class="value" style="font-size:24px">${brl(total)}</div></div><div class="metric"><div class="label">Rolos comprados</div><div class="value">${rolos}</div></div><div class="metric"><div class="label">Lançamentos</div><div class="value">${rows.length}</div></div></div><p class="muted" style="margin-top:14px">Esses números são apenas históricos e não participam do cálculo do estoque disponível.</p></div></div><div class="panel" style="margin-top:16px"><h3>Histórico de compras anteriores</h3>${table(rows)}</div>`;
+ $('#hSave').onclick=save;
+ document.querySelectorAll('.hdel').forEach(x=>x.onclick=async()=>{if(!confirm('Excluir esta compra histórica?'))return;await supabase.from('compras_historicas').delete().eq('id',x.dataset.id);render()});
+}
+function table(rows){if(!rows.length)return'<div class="muted">Nenhuma compra histórica cadastrada.</div>';return `<div class="table-wrap"><table class="table"><thead><tr><th>Mês</th><th>Tamanho</th><th>Caixas</th><th>Rolos</th><th>Valor</th><th>Fornecedor</th><th>Observação</th><th>Ação</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${monthLabel(x.competencia)}</td><td>${x.tamanho}</td><td>${x.caixas??'—'}</td><td>${x.rolos}</td><td>${x.valor==null?'—':brl(x.valor)}</td><td>${esc(x.fornecedor||'—')}</td><td>${esc(x.observacao||'—')}</td><td><button class="btn danger hdel" data-id="${x.id}">Excluir</button></td></tr>`).join('')}</tbody></table></div>`}
+async function save(){const competencia=$('#hMonth').value;if(!competencia)return alert('Informe o mês da compra.');const q=Math.max(1,Number($('#hQty').value||1)),isBox=$('#hUnit').value==='boxes',caixas=isBox?q:null,rolos=isBox?q*10:q,valor=parseMoney($('#hValue').value);const {error}=await supabase.from('compras_historicas').insert({competencia,tamanho:$('#hType').value,rolos,caixas,valor:valor||null,fornecedor:$('#hSupplier').value.trim()||null,observacao:$('#hObs').value.trim()||null});if(error)return alert('Não foi possível salvar.');alert('Compra histórica salva sem alterar o estoque.');render()}
+load();
