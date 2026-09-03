@@ -10,6 +10,10 @@
 <body>
   <div id="app"></div>
   <script src="/visual.js"></script>
-  <script type="module" src="/app.js"></script>
+  <script type="module">
+    const path=location.pathname.replace(/\/+$/,'')||'/';
+    if(path==='/admin') import('/admin-v2.js');
+    else import('/app.js');
+  </script>
 </body>
 </html>
