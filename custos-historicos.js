@@ -1,0 +1,10 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const supabase=createClient('https://c--102f54f5-5f8b-4f19-aa51-2244c18d2b83-prod.lovable.cloud','sb_publishable_nAJIGfPVHTtEejRo1-TL4g_9uKzid-V');
+const TYPES=['100x150','100x80','100x30'];
+const BASE={'100x150':40,'100x80':80,'100x30':10};
+const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+async function data(){const [h,r,e]=await Promise.all([supabase.from('compras_historicas').select('*'),supabase.from('retiradas').select('tamanho,rolos'),supabase.from('entradas').select('tamanho,rolos')]);return{h:h.data||[],r:r.data||[],e:e.data||[]}}
+function stats(d){const stock={...BASE};d.e.forEach(x=>stock[x.tamanho]!=null&&(stock[x.tamanho]+=Number(x.rolos||0)));d.r.forEach(x=>stock[x.tamanho]!=null&&(stock[x.tamanho]-=Number(x.rolos||0)));const avg={};TYPES.forEach(t=>{const a=d.h.filter(x=>x.tamanho===t&&Number(x.valor)>0&&Number(x.rolos)>0),v=a.reduce((s,x)=>s+Number(x.valor||0),0),q=a.reduce((s,x)=>s+Number(x.rolos||0),0);avg[t]=q?v/q:0});return{stock,avg}}
+async function fill(){const d=await data(),s=stats(d);document.querySelectorAll('table').forEach(table=>{const heads=[...table.querySelectorAll('th')].map(x=>x.textContent.trim().toUpperCase());const ci=heads.findIndex(x=>x.includes('CUSTO MÉDIO/ROLO')),vi=heads.findIndex(x=>x.includes('VALOR ESTIMADO SALDO'));if(ci<0&&vi<0)return;[...table.querySelectorAll('tbody tr')].forEach((tr,i)=>{const cells=tr.querySelectorAll('td');let type=[...cells].map(x=>x.textContent.trim()).find(x=>TYPES.includes(x));if(!type)type=TYPES[i];if(!type)return;if(ci>=0&&cells[ci])cells[ci].textContent=s.avg[type]?brl(s.avg[type]):'—';if(vi>=0&&cells[vi])cells[vi].textContent=s.avg[type]?brl(Math.max(0,s.stock[type])*s.avg[type]):'—'})})}
+function watch(){document.addEventListener('click',e=>{const b=e.target.closest('.tab');if(b&&['t5','t6'].includes(b.dataset.tab))setTimeout(fill,80)});setTimeout(fill,700)}
+watch();
