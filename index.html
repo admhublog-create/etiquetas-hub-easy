@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#17365d" />
-  <title>Etiquetas HUB Easy</title>
+  <title>Insumos HUB Easy</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -15,7 +15,13 @@
     if(path==='/admin') {
       import('/admin-v2.js');
       import('/historico.js');
-    } else import('/app.js');
+      import('/fita.js');
+    } else if(path==='/retirar/fita-gomada') {
+      import('/fita.js');
+    } else {
+      import('/app.js');
+      import('/fita.js');
+    }
   </script>
 </body>
 </html>
