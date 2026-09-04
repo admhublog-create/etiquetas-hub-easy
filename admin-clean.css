@@ -49,4 +49,8 @@
 .purchase-tag{margin-left:auto;font-size:9px;font-weight:900;letter-spacing:.05em;border:0;border-radius:2px;padding:4px 6px;color:#666;background:#ededed}
 .purchase-stock{margin-top:9px;color:#707070;font-size:12px}.purchase-stock b{font-size:21px;color:#2f2f2f;margin-right:3px}
 .purchase-title{margin-top:7px;font-weight:900;color:#383838;font-size:12px}.purchase-text{margin-top:2px;color:#777;font-size:12px;line-height:1.35}
-@media(max-width:850px){.purchase-grid{grid-template-columns:1fr}.purchase-center-head{display:block}.purchase-summary{display:inline-block;margin-top:8px}}
+
+/* Dashboard de consumo */
+.cons-dash{display:grid;gap:10px}.cons-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.cons-kpi,.cons-box{background:#fff;border:0;border-radius:3px;box-shadow:0 2px 8px rgba(0,0,0,.035);padding:13px 14px}.cons-kpi span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:900;color:#707070}.cons-kpi strong{display:block;font-size:25px;color:#2f2f2f;margin:4px 0 1px}.cons-kpi small{color:#808080;font-size:11px}.cons-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cons-box h3{margin:0 0 12px;font-size:15px;color:#333}.cons-wide{padding-bottom:15px}.cons-bars{display:grid;gap:8px}.cons-bar-row{display:grid;grid-template-columns:70px 1fr 42px;align-items:center;gap:8px;font-size:11px;color:#666}.cons-bar-row b{text-align:right;color:#444;font-size:11px}.cons-track{height:8px;background:#eeeeed;overflow:hidden}.cons-track i{display:block;height:100%;background:#777;min-width:3px}
+@media(max-width:850px){.purchase-grid{grid-template-columns:1fr}.purchase-center-head{display:block}.purchase-summary{display:inline-block;margin-top:8px}.cons-kpis{grid-template-columns:1fr 1fr}.cons-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.cons-kpis{grid-template-columns:1fr}.cons-bar-row{grid-template-columns:60px 1fr 35px}}
