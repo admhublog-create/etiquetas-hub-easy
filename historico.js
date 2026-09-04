@@ -4,7 +4,7 @@ const TYPES=['100x150','100x80','100x30'];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const monthLabel=k=>{const [y,m]=String(k).split('-');return new Date(+y,+m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})};
+const monthLabel=k=>{const [y,m]=String(k).split('-');const txt=new Date(+y,+m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});return txt.charAt(0).toUpperCase()+txt.slice(1)};
 const parseMoney=s=>Number(String(s||'').replace(/\./g,'').replace(',','.').replace(/[^0-9.-]/g,''))||0;
 async function load(){
  const tabs=$('.tabs'); if(!tabs){setTimeout(load,250);return}
