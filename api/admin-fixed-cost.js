@@ -9,6 +9,9 @@ module.exports=async function handler(req,res){
     const FIXED=16;
     const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 
+    // Cabeçalho do painel.
+    html=html.replace('<h1>Olá, Larissa! 👋</h1>','<h1>Controle de Etiquetas</h1>');
+
     // Custo médio por etiqueta/rolo: todas as etiquetas custam R$ 16,00.
     ['100x150','100x80','100x30'].forEach(type=>{
       const row4=new RegExp(`<tr><td>${type}<\\/td><td>.*?<\\/td><td>(-?\\d+)<\\/td><td>.*?<\\/td><\\/tr>`,'g');
