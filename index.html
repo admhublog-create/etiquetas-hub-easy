@@ -13,13 +13,8 @@
   <script src="/visual.js"></script>
   <script type="module">
     const path=location.pathname.replace(/\/+$/,'')||'/';
-    if(path==='/admin') {
-      import('/admin-v2.js');
-      import('/historico.js');
-      import('/consumo-dashboard.js');
-      import('/custos-historicos.js');
-      import('/estoque-base-fix.js');
-    } else import('/app.js');
+    if(path==='/admin') import('/admin-fixed.js');
+    else import('/app.js');
   </script>
 </body>
 </html>
