@@ -1,6 +1,53 @@
 (()=>{
   const p=location.pathname.toLowerCase();
   const b=document.body;
+
+  /*
+    O backend de dados fica em um domínio externo. Em alguns navegadores a chamada
+    direta pode ficar pendurada. Interceptamos apenas as rotas REST usadas pelo app
+    e encaminhamos pelo proxy same-origin da Vercel.
+  */
+  const nativeFetch=window.fetch.bind(window);
+  const DATA_HOST='c--102f54f5-5f8b-4f19-aa51-2244c18d2b83-prod.lovable.cloud';
+  window.fetch=async function(input,init={}){
+    try{
+      const raw=typeof input==='string'?input:(input&&input.url)||'';
+      const u=new URL(raw,location.origin);
+      if(u.hostname!==DATA_HOST || !u.pathname.startsWith('/rest/v1/')){
+        return nativeFetch(input,init);
+      }
+
+      const table=u.pathname.split('/').filter(Boolean).pop();
+      const method=String(init.method || (input&&input.method) || 'GET').toUpperCase();
+      let proxy=`/api/hub-data?table=${encodeURIComponent(table)}`;
+      const options={method,headers:{'Content-Type':'application/json'}};
+
+      if(method==='GET'){
+        return nativeFetch(proxy,{method:'GET'});
+      }
+
+      if(method==='POST'){
+        let body=init.body;
+        if(body==null && input instanceof Request){
+          body=await input.clone().text();
+        }
+        options.body=typeof body==='string'?body:JSON.stringify(body||{});
+        return nativeFetch(proxy,options);
+      }
+
+      if(method==='DELETE'){
+        const idFilter=u.searchParams.get('id')||'';
+        const id=idFilter.startsWith('eq.')?idFilter.slice(3):idFilter;
+        proxy+=`&id=${encodeURIComponent(id)}`;
+        return nativeFetch(proxy,{method:'DELETE'});
+      }
+
+      return nativeFetch(input,init);
+    }catch(err){
+      return nativeFetch(input,init);
+    }
+  };
+
   b.classList.remove('label-100x150','label-100x80','label-100x30','admin');
   if(p.startsWith('/admin')) b.classList.add('admin');
   else if(p.includes('100x150')) b.classList.add('label-100x150');
