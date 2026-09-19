@@ -25,7 +25,7 @@ module.exports=async function handler(req,res){
 
     const stock={};
     [...html.matchAll(/<div class="label">Estoque (100x150|100x80|100x30)<\/div><div class="value">(-?\d+)<\/div>/g)].forEach(m=>stock[m[1]]=Number(m[2])||0);
-    const totalStock=TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0);
+
     const consumoMatch=html.match(/<span>Consumo neste mês<\/span><strong>(\d+)<\/strong>/);
     const consumo=consumoMatch?Number(consumoMatch[1])||0:0;
     const estoqueValor=brl(totalStock*FIXED), consumoValor=brl(consumo*FIXED);
@@ -39,6 +39,14 @@ module.exports=async function handler(req,res){
     const pre=html.match(/window\.__HUB_PRELOADED__=(\{.*?\});\(function\(\)/s);
     let data={retiradas:[],entradas:[],inventarios:[]};
     if(pre){try{data=JSON.parse(pre[1])}catch{}}
+    const inventoriesEarly=data.inventarios||[], latestInventoryEarly=inventoriesEarly[0]||null;
+    if(latestInventoryEarly){TYPES.forEach(t=>{const v=Number(latestInventoryEarly['fisico_'+t]);if(Number.isFinite(v))stock[t]=v;});}
+    TYPES.forEach(t=>{
+      const re=new RegExp('(<div class="label">Estoque '+t.replace('x','x')+'<\\/div><div class="value">)-?\\d+(<\\/div>)','g');
+      html=html.replace(re,'$1'+stock[t]+'$2');
+    });
+    html=html.replace(/(<div class="label">Estoque total<\/div><div class="value">)-?\d+(<\/div>)/gi,(m,a,b)=>a+TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0)+b);
+    const totalStock=TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0);
     const legacyIds=new Set(['1a9216ff-90bc-4f64-8943-d2c0ad967b52','441056d3-75db-4010-999d-05612edfffe0']);
     const isLegacy=e=>legacyIds.has(String(e.id||''))||String(e.observacao||'').toLowerCase().includes('ajuste de estoque atual');
     const rows=data.retiradas||[], entries=(data.entradas||[]).filter(e=>!isLegacy(e)), inventories=data.inventarios||[];
@@ -49,9 +57,6 @@ module.exports=async function handler(req,res){
       return '<tr><td>'+d+'</td><td>'+(x.tipo||'—')+'</td><td>'+vals[0].fv+'</td><td>'+vals[1].fv+'</td><td>'+vals[2].fv+'</td><td>'+(vals[0].fv+vals[1].fv+vals[2].fv)+'</td><td>'+(vals[0].dif+vals[1].dif+vals[2].dif)+'</td><td>'+(x.observacao||'—')+'</td></tr>';
     }).join('')||'<tr><td colspan="8">Nenhum inventário registrado.</td></tr>';
     const invSummary=latestInventory?TYPES.map(t=>{const fk='fisico_'+t,sk='sistema_'+t;const fv=Number(latestInventory[fk]??0),sv=Number(latestInventory[sk]??0);return '<div class="dash-kpi"><span>Inventário '+t+'</span><strong>'+fv+'</strong><small>Sistema: '+sv+' · Diferença: '+(fv-sv)+'</small></div>'}).join(''):'<div class="dash-kpi"><span>Inventário</span><strong>—</strong><small>Nenhuma contagem registrada</small></div>';
-    // Após uma conferência física, o painel passa a exibir o saldo físico mais recente.
-    // A diferença permanece registrada no histórico do inventário para rastreabilidade.
-    if(latestInventory){TYPES.forEach(t=>{const v=Number(latestInventory['fisico_'+t]);if(Number.isFinite(v))stock[t]=v;});}
 
 
     const reportRows=TYPES.map(t=>{
