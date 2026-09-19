@@ -49,6 +49,10 @@ module.exports=async function handler(req,res){
       return '<tr><td>'+d+'</td><td>'+(x.tipo||'—')+'</td><td>'+vals[0].fv+'</td><td>'+vals[1].fv+'</td><td>'+vals[2].fv+'</td><td>'+(vals[0].fv+vals[1].fv+vals[2].fv)+'</td><td>'+(vals[0].dif+vals[1].dif+vals[2].dif)+'</td><td>'+(x.observacao||'—')+'</td></tr>';
     }).join('')||'<tr><td colspan="8">Nenhum inventário registrado.</td></tr>';
     const invSummary=latestInventory?TYPES.map(t=>{const fk='fisico_'+t,sk='sistema_'+t;const fv=Number(latestInventory[fk]??0),sv=Number(latestInventory[sk]??0);return '<div class="dash-kpi"><span>Inventário '+t+'</span><strong>'+fv+'</strong><small>Sistema: '+sv+' · Diferença: '+(fv-sv)+'</small></div>'}).join(''):'<div class="dash-kpi"><span>Inventário</span><strong>—</strong><small>Nenhuma contagem registrada</small></div>';
+    // Após uma conferência física, o painel passa a exibir o saldo físico mais recente.
+    // A diferença permanece registrada no histórico do inventário para rastreabilidade.
+    if(latestInventory){TYPES.forEach(t=>{const v=Number(latestInventory['fisico_'+t]);if(Number.isFinite(v))stock[t]=v;});}
+
 
     const reportRows=TYPES.map(t=>{
       const retiradas=rows.filter(x=>x.tamanho===t).reduce((s,x)=>s+Number(x.rolos||0),0);
