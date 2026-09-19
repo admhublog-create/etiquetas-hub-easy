@@ -26,16 +26,6 @@ module.exports=async function handler(req,res){
     const stock={};
     [...html.matchAll(/<div class="label">Estoque (100x150|100x80|100x30)<\/div><div class="value">(-?\d+)<\/div>/g)].forEach(m=>stock[m[1]]=Number(m[2])||0);
 
-    const consumoMatch=html.match(/<span>Consumo neste mês<\/span><strong>(\d+)<\/strong>/);
-    const consumo=consumoMatch?Number(consumoMatch[1])||0:0;
-    const estoqueValor=brl(totalStock*FIXED), consumoValor=brl(consumo*FIXED);
-
-    html=html.replace(/(<span>Valor estimado do estoque<\/span><strong>).*?(<\/strong>)/g,`$1${estoqueValor}$2`);
-    html=html.replace(/(<span>Valor do estoque<\/span><strong>).*?(<\/strong>)/g,`$1${estoqueValor}$2`);
-    html=html.replace(/(<span>Custo do consumo no mês<\/span><strong>).*?(<\/strong>)/g,`$1${consumoValor}$2`);
-    html=html.replace(/(<span>Custo consumo mês<\/span><strong>).*?(<\/strong>)/g,`$1${consumoValor}$2`);
-    html=html.replace('Baseado nas compras cadastradas','Custo padrão atual: R$ 16,00 por rolo');
-
     const pre=html.match(/window\.__HUB_PRELOADED__=(\{.*?\});\(function\(\)/s);
     let data={retiradas:[],entradas:[],inventarios:[]};
     if(pre){try{data=JSON.parse(pre[1])}catch{}}
@@ -47,6 +37,14 @@ module.exports=async function handler(req,res){
     });
     html=html.replace(/(<div class="label">Estoque total<\/div><div class="value">)-?\d+(<\/div>)/gi,(m,a,b)=>a+TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0)+b);
     const totalStock=TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0);
+    const consumoMatch=html.match(/<span>Consumo neste mês<\/span><strong>(\d+)<\/strong>/);
+    const consumo=consumoMatch?Number(consumoMatch[1])||0:0;
+    const estoqueValor=brl(totalStock*FIXED), consumoValor=brl(consumo*FIXED);
+    html=html.replace(/(<span>Valor estimado do estoque<\/span><strong>).*?(<\/strong>)/g,`$1${estoqueValor}$2`);
+    html=html.replace(/(<span>Valor do estoque<\/span><strong>).*?(<\/strong>)/g,`$1${estoqueValor}$2`);
+    html=html.replace(/(<span>Custo do consumo no mês<\/span><strong>).*?(<\/strong>)/g,`$1${consumoValor}$2`);
+    html=html.replace(/(<span>Custo consumo mês<\/span><strong>).*?(<\/strong>)/g,`$1${consumoValor}$2`);
+    html=html.replace('Baseado nas compras cadastradas','Custo padrão atual: R$ 16,00 por rolo');
     const legacyIds=new Set(['1a9216ff-90bc-4f64-8943-d2c0ad967b52','441056d3-75db-4010-999d-05612edfffe0']);
     const isLegacy=e=>legacyIds.has(String(e.id||''))||String(e.observacao||'').toLowerCase().includes('ajuste de estoque atual');
     const rows=data.retiradas||[], entries=(data.entradas||[]).filter(e=>!isLegacy(e)), inventories=data.inventarios||[];
