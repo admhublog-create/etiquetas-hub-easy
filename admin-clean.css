@@ -14,3 +14,22 @@
 @media(max-width:1200px){:root{--side:220px}.admin .metric,.admin .cost-card{padding-left:92px}.admin .metric:before,.admin .cost-card:before{left:18px}.admin .metric:after,.admin .status{left:92px}.admin .top{padding-right:240px}.dash-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:1000px){.admin .metrics,.admin .cost-grid{grid-template-columns:repeat(2,1fr)}.admin .top{padding-right:28px}.admin .top:after,.hub-month{display:none}.admin .hero-actions{right:0}.hub-bottom-banner{grid-template-columns:48px 1fr}.hub-bottom-logo,.hub-bottom-slogan{display:none}.dash-grid,.cost-layout{grid-template-columns:1fr}}
 @media(max-width:760px){body.admin{padding-left:0}.admin .tabs{position:static;width:auto;display:flex;flex-direction:row;overflow:auto;padding:8px;border-right:0}.hub-brand,.hub-side-card,.hub-user,.hub-exit{display:none}.admin .tab{min-width:max-content;width:auto}.admin .top{padding:22px 18px 82px;min-height:auto}.admin .hero-actions{left:18px;right:auto;top:auto;bottom:18px}.admin-shell{padding:12px}.admin .metrics,.admin .cost-grid,.admin .two,.dash-kpis{grid-template-columns:1fr}.hub-bottom-banner{grid-template-columns:1fr}.hub-bottom-icon{display:none}.page-title{display:block}.page-title .primary-action{display:inline-flex;margin-top:12px}.dash-bar-row{grid-template-columns:95px 1fr 32px}.form-row{grid-template-columns:1fr}.info-strip{display:block}.info-strip span{display:block;margin-top:4px}}
+
+/* Identidade visual HUB — azul petróleo/grafite */
+:root{--hub:#526f79;--hub2:#78939d;--ink:#26343a;--muted:#667d82;--line:#dbe3e5;--paper:#fff;--wash:#f5f7f7;--soft:#e9f0f1}
+html{background:#f5f7f7}body.admin{background:linear-gradient(135deg,#f8faf9 0%,#f5f7f7 55%,#fafbfb 100%);color:#26343a}
+.admin .top{background:linear-gradient(115deg,#fff 0%,#f5f8f8 65%,#e9f0f1 100%);border-bottom-color:#dbe3e5}
+.admin .top:before{border-color:rgba(82,111,121,.09)}.admin .top:after{color:#607b85}.admin .top h1{color:#26343a}.admin .subtitle{color:#667d82}
+.admin .admin-link,.primary-action{background:linear-gradient(135deg,#607b85,#405b65);box-shadow:0 8px 18px rgba(47,67,75,.16)}
+.admin .tabs{background:#2f434b;border-right-color:#263840;box-shadow:6px 0 22px rgba(38,56,64,.08)}
+.hub-brand{border-bottom-color:#49616a}.hub-logo{color:#fff}.hub-tag,.hub-section{color:#b9d0d5}
+.admin .tab{color:#eaf2f3}.admin .tab:hover{background:#3b515a}.admin .tab.active{background:#465c65;color:#fff;box-shadow:inset 3px 0 0 #9bb0b7}
+.hub-nav-icon{color:#c6d7da}.hub-side-card{background:#384d55;border-color:#49616a}.hub-side-card strong{color:#fff}.hub-side-card small{color:#c2d2d5}.hub-side-icon{background:#465c65}
+.hub-user{border-top-color:#49616a;color:#fff}.hub-user small,.hub-exit{color:#c2d2d5}.hub-avatar{background:#607b85}
+.admin .metric:nth-child(1){background:linear-gradient(135deg,#78939d,#607b85)}.admin .metric:nth-child(2){background:linear-gradient(135deg,#eef3f3,#dfe8e9)}.admin .metric:nth-child(3){background:linear-gradient(135deg,#e4edef,#cfdddf)}.admin .metric:nth-child(4){background:linear-gradient(135deg,#526f79,#354e57)}
+.admin .metric:before,.admin .cost-card:before{color:#526f79}.admin .panel,.admin .cost-card,.dash-kpi{border-color:#dbe3e5;box-shadow:0 8px 24px rgba(38,56,64,.045)}
+.admin .section .panel h3:before,.hub-panel-action,.page-kicker,.money{color:#526f79}
+.admin .table th{background:#eef3f3;color:#52656b;border-bottom-color:#dbe3e5}.admin .table td{border-bottom-color:#e7edef}
+.hub-bottom-banner{background:linear-gradient(90deg,#e9f0f1,#f7f9f9);border-color:#dbe3e5}.hub-bottom-icon{background:#dce7e9}.hub-bottom-copy strong{color:#334b54}.hub-bottom-logo,.hub-bottom-slogan{color:#526f79}
+.dash-track{background:#e8eeee}.dash-track i{background:linear-gradient(90deg,#78939d,#526f79)}
+.info-strip{background:#edf3f3;border-color:#d8e3e5;color:#405b65}
