@@ -26,9 +26,22 @@ module.exports=async function handler(req,res){
     ]);
     const data={retiradas,entradas,inventarios,compras};
     const base={'100x150':40,'100x80':80,'100x30':10};
-    const stock={...base};
-    entradas.forEach(x=>{if(stock[x.tamanho]!=null)stock[x.tamanho]+=Number(x.rolos||0)});
-    retiradas.forEach(x=>{if(stock[x.tamanho]!=null)stock[x.tamanho]-=Number(x.rolos||0)});
+    // O inventário físico mais recente vira o novo ponto de partida do estoque.
+    // A partir dele, somente entradas e retiradas posteriores alteram o saldo.
+    // Isso evita reaplicar movimentações antigas já refletidas na contagem física.
+    const latestInventory=inventarios[0]||null;
+    const inventoryAt=latestInventory?new Date(latestInventory.created_at).getTime():null;
+    const stock=latestInventory?{
+      '100x150':Number(latestInventory.fisico_100x150||0),
+      '100x80':Number(latestInventory.fisico_100x80||0),
+      '100x30':Number(latestInventory.fisico_100x30||0)
+    }:{...base};
+    entradas.forEach(x=>{
+      if(stock[x.tamanho]!=null&&(!inventoryAt||new Date(x.created_at).getTime()>inventoryAt)) stock[x.tamanho]+=Number(x.rolos||0);
+    });
+    retiradas.forEach(x=>{
+      if(stock[x.tamanho]!=null&&(!inventoryAt||new Date(x.created_at).getTime()>inventoryAt)) stock[x.tamanho]-=Number(x.rolos||0);
+    });
     const total=TYPES.reduce((s,t)=>s+stock[t],0);
     const now=new Date();
     const currentKey=`${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2,'0')}`;
