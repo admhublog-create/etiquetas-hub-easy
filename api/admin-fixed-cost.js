@@ -30,10 +30,25 @@ module.exports=async function handler(req,res){
     let data={retiradas:[],entradas:[],inventarios:[]};
     if(pre){try{data=JSON.parse(pre[1])}catch{}}
     const inventoriesEarly=data.inventarios||[], latestInventoryEarly=inventoriesEarly[0]||null;
-    if(latestInventoryEarly){TYPES.forEach(t=>{const v=Number(latestInventoryEarly['fisico_'+t]);if(Number.isFinite(v))stock[t]=v;});}
+    if(latestInventoryEarly){
+      const inventoryAt=new Date(latestInventoryEarly.created_at).getTime();
+      TYPES.forEach(t=>{
+        const v=Number(latestInventoryEarly['fisico_'+t]);
+        if(Number.isFinite(v)) stock[t]=v;
+      });
+      // O inventário é um checkpoint: só movimentos posteriores a ele alteram o saldo.
+      (data.entradas||[]).forEach(x=>{
+        if(stock[x.tamanho]!=null&&new Date(x.created_at).getTime()>inventoryAt) stock[x.tamanho]+=Number(x.rolos||0);
+      });
+      (data.retiradas||[]).forEach(x=>{
+        if(stock[x.tamanho]!=null&&new Date(x.created_at).getTime()>inventoryAt) stock[x.tamanho]-=Number(x.rolos||0);
+      });
+    }
     TYPES.forEach(t=>{
       const re=new RegExp('(<div class="label">Estoque '+t.replace('x','x')+'<\\/div><div class="value">)-?\\d+(<\\/div>)','g');
       html=html.replace(re,'$1'+stock[t]+'$2');
+      const detailRe=new RegExp('(<div class="label">Estoque '+t.replace('x','x')+'<\\/div><div class="value">-?\\d+<\\/div><div class="muted">)rolos · .*?(<\\/div>)','g');
+      html=html.replace(detailRe,'$1rolos · '+equivalent(stock[t])+'$2');
     });
     html=html.replace(/(<div class="label">Estoque total<\/div><div class="value">)-?\d+(<\/div>)/gi,(m,a,b)=>a+TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0)+b);
     const totalStock=TYPES.reduce((s,t)=>s+Math.max(0,stock[t]||0),0);
