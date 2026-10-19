@@ -15,10 +15,12 @@ module.exports=async function handler(req,res){
       const tamanho=String(b.tamanho||'').trim();
       const rolos=Math.max(1,Number(b.rolos)||0);
       const caixas=b.caixas==null?null:Math.max(0,Number(b.caixas)||0);
-      const valor=Number(b.valor)||0;
+      const rawValor=b.valor;
+      const valor=typeof rawValor==='number'?rawValor:Number(String(rawValor??'').trim().replace(/\s/g,'').replace(/R\$/gi,'').replace(/\.(?=\d{3}(?:\D|$))/g,'').replace(',','.').replace(/[^0-9.-]/g,''))||0;
       if(!/^\d{4}-\d{2}$/.test(competencia)) return json(res,400,{ok:false,error:'Competência inválida.'});
       if(!['100x150','100x80','100x30'].includes(tamanho)) return json(res,400,{ok:false,error:'Tamanho inválido.'});
-      if(!rolos||valor<=0) return json(res,400,{ok:false,error:'Informe quantidade e valor.'});
+      if(!Number.isFinite(rolos)||rolos<1) return json(res,400,{ok:false,error:'Informe uma quantidade válida de rolos.'});
+      if(!Number.isFinite(valor)||valor<=0) return json(res,400,{ok:false,error:'Informe um valor total maior que zero. Você pode usar vírgula nos centavos, por exemplo 960,00.'});
       const payload={competencia,tamanho,rolos,caixas,valor,fornecedor:String(b.fornecedor||'').trim()||null,observacao:String(b.observacao||'').trim()||null};
       const r=await fetch(`${BASE}/rest/v1/compras_historicas`,{method:'POST',headers:{...headers,Prefer:'return=representation'},body:JSON.stringify(payload)});
       if(!r.ok) return json(res,r.status,{ok:false,error:await r.text()});
