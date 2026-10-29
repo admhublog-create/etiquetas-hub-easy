@@ -1,10 +1,21 @@
-const BASE='https://c--102f54f5-5f8b-4f19-aa51-2244c18d2b83-prod.lovable.cloud';
-const KEY='sb_publishable_nAJIGfPVHTtEejRo1-TL4g_9uKzid-V';
+// Configure somente uma chave PUBLICÁVEL (anon/publishable), nunca service_role.
+// A chave publicável também é utilizada por formulários do painel no navegador.
+const BASE=(process.env.LOVABLE_SUPABASE_URL||'').replace(/\\/$/,'');
+const KEY=process.env.LOVABLE_SUPABASE_PUBLISHABLE_KEY||'';
+function requireConfig(){
+  if(!BASE||!KEY) throw new Error('Conexão do Lovable não configurada para este ambiente. Verifique LOVABLE_SUPABASE_URL e LOVABLE_SUPABASE_PUBLISHABLE_KEY na Vercel.');
+  if(!/^https:\\/\\//.test(BASE)) throw new Error('Endereço do Lovable inválido: configure uma URL HTTPS.');
+}
+
 const TYPES=['100x150','100x80','100x30'];
 
 async function getTable(table,order='created_at.desc'){
   const r=await fetch(`${BASE}/rest/v1/${table}?select=*&order=${order}`,{headers:{apikey:KEY,Authorization:`Bearer ${KEY}`}});
-  if(!r.ok) throw new Error(`${table}: ${r.status}`);
+  if(!r.ok){
+    if(r.status===401) throw new Error(`${table}: 401 (credencial não autorizada pelo Lovable; confira a chave publicável e o projeto)`);
+    if(r.status===403) throw new Error(`${table}: 403 (acesso negado; confira as políticas de acesso)`);
+    throw new Error(`${table}: HTTP ${r.status}`);
+  }
   return r.json();
 }
 function safeJson(value){return JSON.stringify(value).replace(/</g,'\\u003c')}
@@ -21,6 +32,7 @@ function pct(v){return v==null?'—':`${v>0?'+':''}${v.toFixed(1)}%`}
 
 module.exports=async function handler(req,res){
   try{
+    requireConfig();
     const [retiradas,entradas,inventarios,compras]=await Promise.all([
       getTable('retiradas'),getTable('entradas'),getTable('inventarios'),getTable('compras_historicas','competencia.desc,created_at.desc')
     ]);
